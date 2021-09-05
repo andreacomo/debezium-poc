@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/ka
 				<kafka:bootstrap-server value="localhost:19092" />
 			</kafka:bootstrap-servers>
 			<kafka:topic-patterns >
-				<kafka:topic-pattern value="dbserver1.inventory.customers" />
+				<kafka:topic-pattern value="dbserver1\.inventory\..*" />
 			</kafka:topic-patterns>
 		</kafka:consumer-plaintext-connection>
 	</kafka:consumer-config>
