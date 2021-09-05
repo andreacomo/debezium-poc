@@ -1,0 +1,79 @@
+version: '2'
+
+services:
+  zookeeper:
+    image: debezium/zookeeper:1.6
+    ports:
+     - 2181:2181
+     - 2888:2888
+     - 3888:3888
+    volumes: 
+     - zookeeper:/zookeeper
+
+  kafka:
+    image: debezium/kafka:1.6
+    ports:
+     - 19092:19092
+    depends_on:
+     - zookeeper
+    environment:
+     - ZOOKEEPER_CONNECT=zookeeper:2181
+     - KAFKA_ADVERTISED_LISTENERS=INSIDE://:9092,OUTSIDE://localhost:19092
+     - KAFKA_LISTENERS=INSIDE://:9092,OUTSIDE://:19092
+     - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+     - KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE
+    volumes: 
+     - kafka:/kafka
+
+  mysql:
+    image: debezium/example-mysql:1.6
+    ports:
+     - 3306:3306
+    environment:
+     - MYSQL_ROOT_PASSWORD=debezium
+     - MYSQL_USER=mysqluser
+     - MYSQL_PASSWORD=mysqlpw
+    volumes: 
+     - mysql:/var/lib/mysql
+
+  connect:
+    image: debezium/connect:1.6
+    ports:
+     - 8083:8083
+    depends_on:
+     - kafka
+     - mysql
+    environment:
+     - BOOTSTRAP_SERVERS=kafka:9092
+     - GROUP_ID=1
+     - CONFIG_STORAGE_TOPIC=deb_connect_configs
+     - OFFSET_STORAGE_TOPIC=deb_connect_offsets
+     - STATUS_STORAGE_TOPIC=deb_connect_statuses
+    volumes: 
+     - kafka-connect:/kafka
+
+  kowl:
+    image: quay.io/cloudhut/kowl:master
+    ports:
+     - "9001:8080"
+    environment:
+     - KAFKA_BROKERS=kafka:9092
+     - CONNECT_ENABLED=true
+     - CONNECT_CLUSTERS_NAME=kafka-connect
+     - CONNECT_CLUSTERS_URL=http://connect:8083
+    depends_on: 
+     - kafka
+     - connect
+
+  connect-ui:
+    image: landoop/kafka-connect-ui
+    ports: 
+     - "9002:8000"
+    environment: 
+     - CONNECT_URL=http://connect:8083
+
+volumes:
+  zookeeper:
+  kafka:
+  mysql:
+  kafka-connect:

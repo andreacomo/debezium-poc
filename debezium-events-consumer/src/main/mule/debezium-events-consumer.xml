@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd">
+	<kafka:consumer-config name="Apache_Kafka_Consumer_configuration" doc:name="Apache Kafka Consumer configuration" doc:id="48a1d2e0-3fb3-4531-8481-d32af44d1d52" >
+		<kafka:consumer-plaintext-connection groupId="debezium-events-consumer" >
+			<kafka:bootstrap-servers >
+				<kafka:bootstrap-server value="localhost:19092" />
+			</kafka:bootstrap-servers>
+			<kafka:topic-patterns >
+				<kafka:topic-pattern value="dbserver1.inventory.customers" />
+			</kafka:topic-patterns>
+		</kafka:consumer-plaintext-connection>
+	</kafka:consumer-config>
+	<flow name="debezium-events-consumerFlow" doc:id="73e2ab60-9ca7-4983-a0ef-ad672c457d01" >
+		<kafka:message-listener doc:name="Message listener" doc:id="1e680ff3-117b-44f5-a068-591f9a2a41c9" config-ref="Apache_Kafka_Consumer_configuration" parallelConsumersAmount="3"/>
+		<logger level="INFO" doc:name="Logger attributes" doc:id="21ce88b0-6cf6-49cf-b95e-1c2cab70ba51" message="#[output application/json --- attributes]"/>
+		<logger level="INFO" doc:name="Logger payload" doc:id="978e212a-b5c2-4e04-a80e-c1a4098e723c" message="#[payload]"/>
+	</flow>
+</mule>
